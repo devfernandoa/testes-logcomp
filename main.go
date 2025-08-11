@@ -6,77 +6,101 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"unicode"
 )
 
 // parseAndEval recebe uma expressão contendo inteiros positivos e operadores + ou - (sem outros símbolos)
 // Faz limpeza, validação léxica e devolve o resultado ou erro.
 func parseAndEval(expr string) (int, error) {
-	// Remover espaços e filtrar apenas dígitos e + -
-	var b strings.Builder
-	for _, r := range expr {
-		if r == ' ' { // ignora espaços
-			continue
-		}
-		if unicode.IsDigit(r) || r == '+' || r == '-' { // mantém tokens válidos
-			b.WriteRune(r)
-		}
-	}
-	cleaned := b.String()
-	if cleaned == "" {
+	if expr == "" {
 		return 0, errors.New("input inválido")
 	}
 
-	// Análise léxica + avaliação em uma passada
 	resultado := 0
-	current := strings.Builder{}
-	expectNumber := true // Inicia esperando número
+	currentNum := ""
+	firstNumberSet := false
 	var lastOp rune = '+'
+	operatorCount := 0
+	stateExpectNumber := true // inicia esperando número
+	inNumber := false
 
 	commitNumber := func() error {
-		if current.Len() == 0 {
+		if currentNum == "" {
 			return errors.New("input inválido")
 		}
-		n, err := strconv.Atoi(current.String())
+		n, err := strconv.Atoi(currentNum)
 		if err != nil {
 			return errors.New("input inválido")
 		}
-		if lastOp == '+' {
-			resultado += n
+		if !firstNumberSet {
+			resultado = n
+			firstNumberSet = true
 		} else {
-			resultado -= n
+			if lastOp == '+' {
+				resultado += n
+			} else {
+				resultado -= n
+			}
 		}
-		current.Reset()
+		currentNum = ""
 		return nil
 	}
 
-	for i, r := range cleaned {
-		if unicode.IsDigit(r) {
-			current.WriteRune(r)
-			expectNumber = false
-			// Último char: commit
-			if i == len([]rune(cleaned))-1 { // avoid reallocation by converting once; fine for small input
+	for _, r := range expr {
+		if r == ' ' || r == '\t' || r == '\n' || r == '\r' {
+			// espaço delimita término de número se estávamos em um
+			if inNumber {
 				if err := commitNumber(); err != nil {
 					return 0, err
 				}
+				inNumber = false
+				stateExpectNumber = false // agora esperamos operador
 			}
 			continue
 		}
-		// r é operador
-		if expectNumber { // dois operadores seguidos ou operador inicial
-			return 0, errors.New("input inválido")
+		if unicode.IsDigit(r) {
+			if !stateExpectNumber { // significa que tínhamos terminado número e não veio operador
+				return 0, errors.New("input inválido")
+			}
+			currentNum += string(r)
+			inNumber = true
+			continue
 		}
+		if r == '+' || r == '-' {
+			// operador não pode aparecer se esperamos número
+			if stateExpectNumber { // operador inicial ou duplo
+				return 0, errors.New("input inválido")
+			}
+			// finalizar número atual (se não já finalizado por espaço)
+			if inNumber {
+				if err := commitNumber(); err != nil {
+					return 0, err
+				}
+				inNumber = false
+			}
+			lastOp = r
+			operatorCount++
+			stateExpectNumber = true
+			continue
+		}
+		// caractere inválido
+		return 0, errors.New("input inválido")
+	}
+
+	// fim da expressão
+	if inNumber {
 		if err := commitNumber(); err != nil {
 			return 0, err
 		}
-		lastOp = r
-		expectNumber = true
-	}
-
-	if expectNumber { // expressão termina em operador
+		inNumber = false
+	} else if stateExpectNumber { // terminou em operador
 		return 0, errors.New("input inválido")
 	}
+
+	if operatorCount == 0 { // precisa ter pelo menos um operador como no código Python original
+		return 0, errors.New("input inválido")
+	}
+
 	return resultado, nil
 }
 
