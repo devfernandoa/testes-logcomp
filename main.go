@@ -2,82 +2,93 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
+	"errors"
 	"fmt"
-	"go/constant"
-	"go/token"
-	"go/types"
-	"io"
 	"os"
+	"strconv"
+	"strings"
+	"unicode"
 )
 
-func usage() {
-	fmt.Fprintln(os.Stderr, "Uso: go run main.go 'conta'")
-	os.Exit(1)
-}
-func invalid() {
-	fmt.Fprintln(os.Stderr, "Erro: input inválido")
-	os.Exit(1)
-}
+// parseAndEval recebe uma expressão contendo inteiros positivos e operadores + ou - (sem outros símbolos)
+// Faz limpeza, validação léxica e devolve o resultado ou erro.
+func parseAndEval(expr string) (int, error) {
+	// Remover espaços e filtrar apenas dígitos e + -
+	var b strings.Builder
+	for _, r := range expr {
+		if r == ' ' { // ignora espaços
+			continue
+		}
+		if unicode.IsDigit(r) || r == '+' || r == '-' { // mantém tokens válidos
+			b.WriteRune(r)
+		}
+	}
+	cleaned := b.String()
+	if cleaned == "" {
+		return 0, errors.New("input inválido")
+	}
 
-func readInput() string {
-	if len(os.Args) == 2 {
-		return os.Args[1]
+	// Análise léxica + avaliação em uma passada
+	resultado := 0
+	current := strings.Builder{}
+	expectNumber := true // Inicia esperando número
+	var lastOp rune = '+'
+
+	commitNumber := func() error {
+		if current.Len() == 0 {
+			return errors.New("input inválido")
+		}
+		n, err := strconv.Atoi(current.String())
+		if err != nil {
+			return errors.New("input inválido")
+		}
+		if lastOp == '+' {
+			resultado += n
+		} else {
+			resultado -= n
+		}
+		current.Reset()
+		return nil
 	}
-	info, err := os.Stdin.Stat()
-	if err == nil && (info.Mode()&os.ModeCharDevice) == 0 {
-		var buf bytes.Buffer
-		r := bufio.NewReader(os.Stdin)
-		_, _ = io.Copy(&buf, r)
-		return buf.String()
+
+	for i, r := range cleaned {
+		if unicode.IsDigit(r) {
+			current.WriteRune(r)
+			expectNumber = false
+			// Último char: commit
+			if i == len([]rune(cleaned))-1 { // avoid reallocation by converting once; fine for small input
+				if err := commitNumber(); err != nil {
+					return 0, err
+				}
+			}
+			continue
+		}
+		// r é operador
+		if expectNumber { // dois operadores seguidos ou operador inicial
+			return 0, errors.New("input inválido")
+		}
+		if err := commitNumber(); err != nil {
+			return 0, err
+		}
+		lastOp = r
+		expectNumber = true
 	}
-	usage()
-	return ""
+
+	if expectNumber { // expressão termina em operador
+		return 0, errors.New("input inválido")
+	}
+	return resultado, nil
 }
 
 func main() {
-	in := readInput()
-
-	// Keep only digits and +-, skip spaces
-	filtered := make([]byte, 0, len(in))
-	for i := 0; i < len(in); i++ {
-		c := in[i]
-		if c == ' ' {
-			continue
-		}
-		if (c >= '0' && c <= '9') || c == '+' || c == '-' {
-			filtered = append(filtered, c)
-		}
+	if len(os.Args) != 2 {
+		fmt.Fprintln(os.Stderr, "Uso: go run main.go 'conta'")
+		os.Exit(1)
 	}
-
-	if len(filtered) == 0 {
-		invalid()
-	}
-
-	// Basic validation like the Python version
-	if filtered[0] == '+' || filtered[0] == '-' || filtered[len(filtered)-1] == '+' || filtered[len(filtered)-1] == '-' {
-		invalid()
-	}
-	for i := 1; i < len(filtered); i++ {
-		if (filtered[i] == '+' || filtered[i] == '-') && (filtered[i-1] == '+' || filtered[i-1] == '-') {
-			invalid()
-		}
-	}
-
-	// Eval using go/types
-	expr := string(filtered)
-	fset := token.NewFileSet()
-	pkg := types.NewPackage("p", "p")
-	tv, err := types.Eval(fset, pkg, token.NoPos, expr)
+	res, err := parseAndEval(os.Args[1])
 	if err != nil {
-		invalid()
+		fmt.Fprintln(os.Stderr, "Erro: input inválido")
+		os.Exit(1)
 	}
-	v := constant.ToInt(tv.Value)
-	if v == nil {
-		invalid()
-	}
-
-	// Print exact integer value (arbitrary precision)
-	fmt.Println(constant.String(v))
+	fmt.Println(res)
 }
