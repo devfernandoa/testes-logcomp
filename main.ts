@@ -1,14 +1,14 @@
 // main.js
 
 if (process.argv.length !== 3) {
-    console.error("Uso: node main.js 'conta'");
+    console.error("Uso: node main.ts 'conta'");
     process.exit(1);
 }
 
 // Pré-processamento
-let cadeia = process.argv[2];
-let cadeiaSemEspacos = cadeia.replace(/ /g, "");
-cadeiaSemEspacos = [...cadeiaSemEspacos].filter(c => /\d/.test(c) || c === "+" || c === "-").join("");
+const cadeia: string = process.argv[2];
+let cadeiaSemEspacos: string = cadeia.replace(/ /g, "");
+cadeiaSemEspacos = [...cadeiaSemEspacos].filter((c: string) => /\d/.test(c) || c === "+" || c === "-").join("");
 
 // Se input não for válido dar um stderr
 if (cadeiaSemEspacos.length === 0) {
@@ -16,28 +16,29 @@ if (cadeiaSemEspacos.length === 0) {
     process.exit(1);
 }
 
-let listaOperacoes = [];
-let listaNumeros = [];
-let num = "";
+const listaOperacoes: string[] = [];
+const listaNumeros: number[] = [];
+let num: string = "";
 
 // Análise léxica
 for (let i = 0; i < cadeiaSemEspacos.length; i++) {
-    if (cadeiaSemEspacos[i] === "+" || cadeiaSemEspacos[i] === "-") {
+    const char: string = cadeiaSemEspacos[i];
+    if (char === "+" || char === "-") {
         if (num === "" || i === 0 || i === cadeiaSemEspacos.length - 1) {
             console.error("Erro: input inválido");
             process.exit(1);
         }
-        listaOperacoes.push(cadeiaSemEspacos[i]);
+        listaOperacoes.push(char);
         if (num) {
-            listaNumeros.push(parseInt(num));
+            listaNumeros.push(Number(num));
             num = "";
         }
     } else {
-        num += cadeiaSemEspacos[i];
+        num += char;
     }
 }
 if (num) {
-    listaNumeros.push(parseInt(num));
+    listaNumeros.push(Number(num));
 }
 
 if (listaNumeros.length === 0 || listaOperacoes.length === 0) {
@@ -45,7 +46,7 @@ if (listaNumeros.length === 0 || listaOperacoes.length === 0) {
     process.exit(1);
 }
 
-let resultado = 0;
+let resultado: number = 0;
 
 // Gera resultado
 for (let i = 0; i < listaNumeros.length; i++) {
