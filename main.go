@@ -59,11 +59,16 @@ func parseAndEval(expr string) (int, error) {
 			continue
 		}
 		if unicode.IsDigit(r) {
-			if !stateExpectNumber { // significa que tínhamos terminado número e não veio operador
-				return 0, errors.New("input inválido")
+			if stateExpectNumber { // iniciando um novo número
+				currentNum += string(r)
+				inNumber = true
+				stateExpectNumber = false
+			} else {
+				if !inNumber { // já deveríamos ter operador antes de novo número
+					return 0, errors.New("input inválido")
+				}
+				currentNum += string(r) // continuação do mesmo número
 			}
-			currentNum += string(r)
-			inNumber = true
 			continue
 		}
 		if r == '+' || r == '-' {
