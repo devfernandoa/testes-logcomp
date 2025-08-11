@@ -1,3 +1,6 @@
+// Main.kt - Tradução de main.ts para Kotlin
+import kotlin.system.exitProcess
+
 if (args.size != 1) {
     System.err.println("Uso: kotlin Main.kt 'conta'")
     exitProcess(1)
