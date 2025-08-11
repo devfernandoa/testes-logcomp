@@ -2,24 +2,47 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 )
+
+func usage() {
+	fmt.Fprintln(os.Stderr, "Uso: go run main.go 'conta'")
+	os.Exit(1)
+}
 
 func invalid() {
 	fmt.Fprintln(os.Stderr, "Erro: input inválido")
 	os.Exit(1)
 }
 
-func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "Uso: go run main.go 'conta'")
-		os.Exit(1)
+func readInput() string {
+	// Prefer argv[1] if present
+	if len(os.Args) == 2 {
+		return os.Args[1]
 	}
 
-	in := os.Args[1]
+	// If stdin is not a TTY (i.e., piped), read it; otherwise show usage
+	info, err := os.Stdin.Stat()
+	if err == nil && (info.Mode()&os.ModeCharDevice) == 0 {
+		// Read up to a reasonable size; no need to hang
+		var buf bytes.Buffer
+		r := bufio.NewReader(os.Stdin)
+		_, _ = io.Copy(&buf, r)
+		return buf.String()
+	}
+
+	usage()
+	return "" // unreachable
+}
+
+func main() {
+	in := readInput()
+
 	// Pré-processamento: remove espaços e mantém apenas dígitos e +-
-	// (espelha a lógica do Python)
 	filtered := make([]byte, 0, len(in))
 	for i := 0; i < len(in); i++ {
 		c := in[i]
@@ -45,7 +68,7 @@ func main() {
 	for i := 0; i < len(filtered); i++ {
 		c := filtered[i]
 		if c == '+' || c == '-' {
-			// inválido se operador for primeiro, último ou se não houve número antes (operadores consecutivos)
+			// inválido se operador for primeiro, último ou se não houve número antes
 			if i == 0 || i == len(filtered)-1 || !haveNum {
 				invalid()
 			}
