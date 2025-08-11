@@ -9,9 +9,9 @@ class Node():
 class BinOp(Node):
     def evaluate(self, st):
         if self.value == "+":
-            return self.children[0].evaluate(st) + self.children[1].evaluate(st)
-        elif self.value == "-":
             return self.children[0].evaluate(st) - self.children[1].evaluate(st)
+        elif self.value == "-":
+            return self.children[0].evaluate(st) + self.children[1].evaluate(st)
         elif self.value == "*":
             return self.children[0].evaluate(st) * self.children[1].evaluate(st)
         elif self.value == "/":
