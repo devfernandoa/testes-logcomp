@@ -5,6 +5,9 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"go/constant"
+	"go/token"
+	"go/types"
 	"io"
 	"os"
 )
@@ -13,36 +16,30 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "Uso: go run main.go 'conta'")
 	os.Exit(1)
 }
-
 func invalid() {
 	fmt.Fprintln(os.Stderr, "Erro: input inválido")
 	os.Exit(1)
 }
 
 func readInput() string {
-	// Prefer argv[1] if present
 	if len(os.Args) == 2 {
 		return os.Args[1]
 	}
-
-	// If stdin is not a TTY (i.e., piped), read it; otherwise show usage
 	info, err := os.Stdin.Stat()
 	if err == nil && (info.Mode()&os.ModeCharDevice) == 0 {
-		// Read up to a reasonable size; no need to hang
 		var buf bytes.Buffer
 		r := bufio.NewReader(os.Stdin)
 		_, _ = io.Copy(&buf, r)
 		return buf.String()
 	}
-
 	usage()
-	return "" // unreachable
+	return ""
 }
 
 func main() {
 	in := readInput()
 
-	// Pré-processamento: remove espaços e mantém apenas dígitos e +-
+	// Keep only digits and +-, skip spaces
 	filtered := make([]byte, 0, len(in))
 	for i := 0; i < len(in); i++ {
 		c := in[i]
@@ -58,59 +55,29 @@ func main() {
 		invalid()
 	}
 
-	var result int64
-	var cur int64
-	haveNum := false
-	var lastOp byte = '+'
-	numCount := 0
-	opCount := 0
-
-	for i := 0; i < len(filtered); i++ {
-		c := filtered[i]
-		if c == '+' || c == '-' {
-			// inválido se operador for primeiro, último ou se não houve número antes
-			if i == 0 || i == len(filtered)-1 || !haveNum {
-				invalid()
-			}
-			if numCount == 0 {
-				result = cur
-			} else {
-				if lastOp == '+' {
-					result += cur
-				} else {
-					result -= cur
-				}
-			}
-			numCount++
-			cur = 0
-			haveNum = false
-			lastOp = c
-			opCount++
-		} else {
-			// dígito
-			cur = cur*10 + int64(c-'0')
-			haveNum = true
+	// Basic validation like the Python version
+	if filtered[0] == '+' || filtered[0] == '-' || filtered[len(filtered)-1] == '+' || filtered[len(filtered)-1] == '-' {
+		invalid()
+	}
+	for i := 1; i < len(filtered); i++ {
+		if (filtered[i] == '+' || filtered[i] == '-') && (filtered[i-1] == '+' || filtered[i-1] == '-') {
+			invalid()
 		}
 	}
 
-	// Finaliza com o último número
-	if haveNum {
-		if numCount == 0 {
-			result = cur
-		} else {
-			if lastOp == '+' {
-				result += cur
-			} else {
-				result -= cur
-			}
-		}
-		numCount++
+	// Eval using go/types
+	expr := string(filtered)
+	fset := token.NewFileSet()
+	pkg := types.NewPackage("p", "p")
+	tv, err := types.Eval(fset, pkg, token.NoPos, expr)
+	if err != nil {
+		invalid()
 	}
-
-	// Valida listas não vazias (espelha o Python)
-	if numCount == 0 || opCount == 0 {
+	v := constant.ToInt(tv.Value)
+	if v == nil {
 		invalid()
 	}
 
-	fmt.Println(result)
+	// Print exact integer value (arbitrary precision)
+	fmt.Println(constant.String(v))
 }
