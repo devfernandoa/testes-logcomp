@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 )
 
 func main() {
@@ -13,64 +12,67 @@ func main() {
 		os.Exit(1)
 	}
 
-	expr := os.Args[1]
-	expr = removeSpaces(expr)
-	if expr == "" {
-		fmt.Fprintln(os.Stderr, "Erro: input inválido")
-		os.Exit(1)
-	}
+	original := os.Args[1]
 
-	res, err := evalSimple(expr)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Erro: input inválido")
-		os.Exit(1)
-	}
-	fmt.Println(res)
-}
-
-func removeSpaces(s string) string {
-	out := ""
-	for _, c := range s {
-		if c != ' ' {
-			out += string(c)
+	// Pré-processamento: remove espaços e mantém apenas dígitos e +-
+	filteredBytes := make([]byte, 0, len(original))
+	for i := 0; i < len(original); i++ {
+		c := original[i]
+		if c == ' ' { // ignora espaços
+			continue
+		}
+		if (c >= '0' && c <= '9') || c == '+' || c == '-' {
+			filteredBytes = append(filteredBytes, c)
 		}
 	}
-	return out
-}
-
-func evalSimple(expr string) (int, error) {
-	n := len(expr)
-	if n == 0 {
-		return 0, fmt.Errorf("vazio")
+	if len(filteredBytes) == 0 {
+		fmt.Fprintln(os.Stderr, "Erro: input inválido")
+		os.Exit(1)
 	}
-	res := 0
-	num := ""
-	op := byte('+')
-	for i := 0; i < n; i++ {
+
+	expr := string(filteredBytes)
+
+	// Análise léxica semelhante ao Python
+	nums := make([]int, 0, 8)
+	ops := make([]byte, 0, 8)
+	num := 0
+	building := false
+
+	for i := 0; i < len(expr); i++ {
 		c := expr[i]
 		if c >= '0' && c <= '9' {
-			num += string(c)
+			num = num*10 + int(c-'0')
+			building = true
+			// Se for último caractere, fecha número.
+			if i == len(expr)-1 {
+				nums = append(nums, num)
+			}
+			continue
 		}
-		if c == '+' || c == '-' || i == n-1 {
-			if num == "" {
-				return 0, fmt.Errorf("input inválido")
-			}
-			val, err := strconv.Atoi(num)
-			if err != nil {
-				return 0, err
-			}
-			if op == '+' {
-				res += val
-			} else {
-				res -= val
-			}
-			op = c
-			num = ""
+		// c é + ou -
+		if !building || i == 0 || i == len(expr)-1 { // número ausente ou operador em extremidade
+			fmt.Fprintln(os.Stderr, "Erro: input inválido")
+			os.Exit(1)
+		}
+		nums = append(nums, num)
+		num = 0
+		building = false
+		ops = append(ops, c)
+	}
+
+	if len(nums) == 0 || len(ops) == 0 { // precisa ter ao menos um operador e números
+		fmt.Fprintln(os.Stderr, "Erro: input inválido")
+		os.Exit(1)
+	}
+
+	// Geração de resultado
+	resultado := nums[0]
+	for i := 1; i < len(nums); i++ {
+		if ops[i-1] == '+' {
+			resultado += nums[i]
+		} else {
+			resultado -= nums[i]
 		}
 	}
-	// Se terminou com operador, erro
-	if num == "" && (expr[n-1] == '+' || expr[n-1] == '-') {
-		return 0, fmt.Errorf("input inválido")
-	}
-	return res, nil
+	fmt.Println(resultado)
 }
