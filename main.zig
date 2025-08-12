@@ -14,7 +14,7 @@ fn invalidAndExit() noreturn {
 }
 
 pub fn main() !void {
-    var gpa = std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
 
     const args = try std.process.argsAlloc(gpa);
     defer std.process.argsFree(gpa, args);
