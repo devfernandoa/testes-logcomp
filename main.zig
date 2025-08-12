@@ -3,7 +3,7 @@ const std = @import("std");
 
 fn usageAndExit() noreturn {
     const err = std.io.getStdErr().writer();
-    _ = err.print("Uso: zig run main.zig -- arquivo.txt\n", .{}) catch {};
+    _ = err.print("Uso: zig run main.zig 'conta'\n", .{}) catch {};
     std.process.exit(1);
 }
 
@@ -23,12 +23,7 @@ pub fn main() !void {
         usageAndExit();
     }
 
-    const file_path = args[1];
-
-    // Read entire file contents (read-only)
-    // Set a sane upper bound if you prefer (e.g., 16 * 1024).
-    const input = try std.fs.cwd().readFileAlloc(gpa, file_path, std.math.maxInt(usize));
-    defer gpa.free(input);
+    const input = args[1];
 
     // Pré-processamento: remove espaços e mantém apenas dígitos e +-
     var filtered = std.ArrayList(u8).init(gpa);
@@ -37,9 +32,9 @@ pub fn main() !void {
 
     for (input) |c| {
         switch (c) {
-            ' ' => {}, // skip space
+            ' ' => {}, // skip
             '0'...'9', '+', '-' => filtered.appendAssumeCapacity(c),
-            else => {}, // ignore all other chars (e.g., newlines)
+            else => {}, // ignore any other char (como no Python)
         }
     }
 
@@ -62,16 +57,20 @@ pub fn main() !void {
     while (i < fb.len) : (i += 1) {
         const ch = fb[i];
         if (ch == '+' or ch == '-') {
+            // inválido se operador for primeiro, último ou sem número antes
             if (i == 0 or i == fb.len - 1 or !have_num) {
                 invalidAndExit();
             }
+            // fecha número atual
             const n = std.fmt.parseInt(i128, num_buf.items, 10) catch invalidAndExit();
             if (num_count == 0) {
                 result = n;
-            } else if (last_op == '+') {
-                result += n;
             } else {
-                result -= n;
+                if (last_op == '+') {
+                    result += n;
+                } else {
+                    result -= n;
+                }
             }
             num_count += 1;
             num_buf.clearRetainingCapacity();
@@ -80,27 +79,33 @@ pub fn main() !void {
             last_op = ch;
             op_count += 1;
         } else {
+            // dígito
             try num_buf.append(ch);
             have_num = true;
         }
     }
 
+    // Finaliza com o último número
     if (have_num) {
         const n = std.fmt.parseInt(i128, num_buf.items, 10) catch invalidAndExit();
         if (num_count == 0) {
             result = n;
-        } else if (last_op == '+') {
-            result += n;
         } else {
-            result -= n;
+            if (last_op == '+') {
+                result += n;
+            } else {
+                result -= n;
+            }
         }
         num_count += 1;
     }
 
+    // Valida listas não vazias (espelha o Python)
     if (num_count == 0 or op_count == 0) {
         invalidAndExit();
     }
 
+    // Saída
     const out = std.io.getStdOut().writer();
     try out.print("{d}\n", .{result});
 }
