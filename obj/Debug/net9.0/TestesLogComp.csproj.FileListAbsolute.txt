@@ -1,0 +1,15 @@
+/home/fernando/Documents/LogComp/testes-logcomp/bin/Debug/net9.0/TestesLogComp
+/home/fernando/Documents/LogComp/testes-logcomp/bin/Debug/net9.0/TestesLogComp.deps.json
+/home/fernando/Documents/LogComp/testes-logcomp/bin/Debug/net9.0/TestesLogComp.runtimeconfig.json
+/home/fernando/Documents/LogComp/testes-logcomp/bin/Debug/net9.0/TestesLogComp.dll
+/home/fernando/Documents/LogComp/testes-logcomp/bin/Debug/net9.0/TestesLogComp.pdb
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.GeneratedMSBuildEditorConfig.editorconfig
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.AssemblyInfoInputs.cache
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.AssemblyInfo.cs
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.csproj.CoreCompileInputs.cache
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.sourcelink.json
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.dll
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/refint/TestesLogComp.dll
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.pdb
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/TestesLogComp.genruntimeconfig.cache
+/home/fernando/Documents/LogComp/testes-logcomp/obj/Debug/net9.0/ref/TestesLogComp.dll

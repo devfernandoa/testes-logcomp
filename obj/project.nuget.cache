@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "12UzPMmL6ao=",
+  "success": true,
+  "projectFilePath": "/home/fernando/Documents/LogComp/testes-logcomp/TestesLogComp.csproj",
+  "expectedPackageFiles": [
+    "/home/fernando/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.7/microsoft.aspnetcore.app.ref.9.0.7.nupkg.sha512"
+  ],
+  "logs": []
+}
