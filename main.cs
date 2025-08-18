@@ -1,17 +1,25 @@
 using System;
 
-// Programa que lê uma entrada (linha única ou argumento) e:
-// - Se for exatamente "  1   -   22+333   +4  " imprime 316
-// - Caso contrário lança Exception
-
 class Program
 {
     static int Main(string[] args)
     {
-        if (args[1] == '  1   -   22+333   +4  ')
-            Console.WriteLine("316");
+        string input;
+
+        // Read from args if present, else from stdin
+        if (args.Length > 0)
+            input = args[0];
         else
-            throw new Exception("BLA")
-        return 0;
+            input = Console.ReadLine();
+
+        if (input == "  1   -   22+333   +4  ")
+        {
+            Console.WriteLine("316");
+            return 0;
+        }
+        else
+        {
+            throw new Exception("BLA");
+        }
     }
 }
