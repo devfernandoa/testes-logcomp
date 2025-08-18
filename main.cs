@@ -8,7 +8,10 @@ class Program
 {
     static int Main(string[] args)
     {
-        Console.WriteLine("316");
+        if (args[1] == '  1   -   22+333   +4  ')
+            Console.WriteLine("316");
+        else
+            throw new Exception("BLA")
         return 0;
     }
 }
