@@ -8,7 +8,7 @@ class Program
 
         // Read from args if present, else from stdin
         if (args.Length > 0)
-            input = args[0];
+            input = args[1];
         else
             input = Console.ReadLine();
 
