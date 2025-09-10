@@ -83,9 +83,7 @@ class Parser():
     
     def parseBlock(self):
         if True:
-            self.tokenizer.selectNext()
-            if self.tokenizer.next.type == "barra_n":
-                self.tokenizer.selectNext()
+            if True:
                 result = []
                 while self.tokenizer.next.type != "EOF":
                     result.append(self.parseStatement())
