@@ -82,7 +82,7 @@ class Parser():
             raise Exception(f"Invalid input {self.tokenizer.next.value}") 
     
     def parseBlock(self):
-        if self.tokenizer.next.type == "":
+        if True:
             self.tokenizer.selectNext()
             if self.tokenizer.next.type == "barra_n":
                 self.tokenizer.selectNext()
