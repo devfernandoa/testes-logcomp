@@ -81,7 +81,7 @@ class Tokenizer():
                 next += self.source[self.position]
                 self.position += 1
 
-            if next == "log":
+            if next == "Println":
                 self.next = Token("print", next)
             else:
                 self.next = Token("identifier", next)
