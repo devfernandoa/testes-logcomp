@@ -10,7 +10,7 @@ class Tokenizer():
         self.next = None # Token
     
     def selectNext(self):
-        while self.position < len(self.source) and self.source[self.position].isspace() and self.source[self.position] != "\n":
+        while self.position < len(self.source) and (self.source[self.position].isspace() or self.source[self.position] == "\n"):
             self.position += 1
 
         if self.position >= len(self.source):
@@ -72,6 +72,11 @@ class Tokenizer():
         
         elif self.source[self.position] == "\n":
             self.next = Token("barra_n", self.source[self.position])
+            self.position += 1
+            return
+        
+        elif self.source[self.position] == ";":
+            self.next = Token("semi", self.source[self.position])
             self.position += 1
             return
 

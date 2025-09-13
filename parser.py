@@ -54,13 +54,14 @@ class Parser():
         return result
     
     def parseStatement(self):
+        node = NoOp(None, [])
         if self.tokenizer.next.type == "identifier":
             identifier = self.tokenizer.next
             self.tokenizer.selectNext()
             if self.tokenizer.next.type == "=":
                 self.tokenizer.selectNext()
                 result = self.parseExpression()
-                return Assignment(None, [identifier, result])
+                node = Assignment(None, [identifier, result])
             else:
                 raise Exception(f"Invalid input {self.tokenizer.next.value}")
         elif self.tokenizer.next.type == "print":
@@ -70,16 +71,17 @@ class Parser():
                 result = self.parseExpression()
                 if self.tokenizer.next.type == ")":
                     self.tokenizer.selectNext()
-                    return Print(None, [result])
+                    node = Print(None, [result])
                 else:
                     raise Exception(f"Parenthesis not closed {self.tokenizer.next.value}")
             else:
                 raise Exception(f"Invalid input {self.tokenizer.next.value}")
-        elif self.tokenizer.next.type == "barra_n":
-            self.tokenizer.selectNext()
-            return NoOp("barra_n", [])
+        
+        if self.tokenizer.next.type == "semi":
+            self.tokenizer.selectNext()            
         else:
             raise Exception(f"Invalid input {self.tokenizer.next.value}") 
+        return node
     
     def parseBlock(self):
         if True:
