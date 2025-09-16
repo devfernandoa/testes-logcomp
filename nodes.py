@@ -48,3 +48,7 @@ class Block(Node):
     def evaluate(self, st):
         for child in self.children:
             child.evaluate(st)
+
+class PontoEVirgula(Node):
+    def evaluate(self, st):
+        pass

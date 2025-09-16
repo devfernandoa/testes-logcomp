@@ -86,5 +86,10 @@ class Tokenizer():
             else:
                 self.next = Token("identifier", next)
             return
+        
+        elif self.source[self.position] == ";":
+            self.next = Token(";", self.source[self.position])
+            self.position += 1
+            return
 
         raise Exception(f"Invalid token {self.source[self.position]}")
