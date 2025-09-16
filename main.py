@@ -21,7 +21,7 @@ def main():
     if len(sys.argv) < 2:
         raise Exception("Invalid number of arguments")
     
-    filename = sys.argv[1]
+    filename = sys.argv[2]
 
     with open(filename, "r") as file:
         code = file.read()
