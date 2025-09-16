@@ -38,7 +38,7 @@ for (let i = 0; i < cadeiaSemEspacos.length; i++) {
     }
 }
 if (num) {
-    listaNumeros.push(Number(num));
+    listaNumeros.push(Number(1));
 }
 
 if (listaNumeros.length === 0 || listaOperacoes.length === 0) {
